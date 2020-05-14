@@ -1,4 +1,21 @@
-FROM pybombs/pybombs-prefix:2.3.3
+FROM ubuntu:18.04 AS minimal
+LABEL maintainer=martin@gnuradio.org
+
+RUN DEBIAN_FRONTEND=noninteractive apt-get update -q
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y python-pip python-apt apt-utils
+RUN pip install --upgrade pip
+RUN pip install pybombs
+RUN pybombs auto-config
+RUN pybombs config makewidth 2
+
+FROM minimal AS prefix
+LABEL maintainer=martin@gnuradio.org
+# Create a prefix in /pybombs
+RUN pybombs prefix init /pybombs -a default
+# Add all the default recipe locations
+RUN pybombs recipes add-defaults
+
+FROM prefix AS commondeps
 LABEL maintainer=martin@gnuradio.org
 
 # This allows setting the makewidth temporarily to a higher value
